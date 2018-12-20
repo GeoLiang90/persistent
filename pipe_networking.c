@@ -30,7 +30,7 @@ int server_handshake(int *to_client) {
     printf("Client message successfully received\n");
 
     *to_client = open(s,O_WRONLY);
-
+    remove("WKP");
     if (*to_client < 0){
       perror("Error opening downpipe from client to write\n");
       return -1;
@@ -67,6 +67,11 @@ int client_handshake(int *to_server) {
     perror("Error opening up to WKP \n");
   }
 
+  int l = mkfifo("DP",0644);
+  if (l != 0){
+    perror("Error with downpipe");
+  }
+
   printf("Now writing DP (My pipe name) to the WKP \n");
 
   write(comm, "DP", sizeof("DP"));
@@ -74,13 +79,9 @@ int client_handshake(int *to_server) {
   *to_server = comm;
 
   printf("Now opening downstream from server to read returns \n");
-  int l = mkfifo("DP",0644);
-  if (l != 0){
-    perror("Error with downpipe");
-  }
 
   int dcomm = open("DP", O_RDONLY);
-
+  remove("DP");
   if (dcomm < 0){
     perror("Error opening up to downpipe \n");
   }
@@ -96,8 +97,9 @@ int client_handshake(int *to_server) {
     return -1;
   }
 
-  char * g = "Got message";
-  write(comm,g, sizeof(g));
-  printf("Replying to server and finishing\n");
+//  char * g = "Got message";
+//  write(comm,g, sizeof(g));
+//  printf("Replying to server and finishing\n");
+  printf("Finishing Handshake \n");
   return dcomm;
 }
